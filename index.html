@@ -1,9 +1,19 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── Configuración de Supabase ──────────────────────────────────────────
+   Pegá acá los dos valores de tu proyecto (Settings → API en Supabase).
+   Mientras estén vacíos, la app sigue guardando en este dispositivo.
+   La "anon public key" es segura de publicar; NO pegues la service_role. */
+window.SUPABASE_URL      = "https://ynfeqhdracxwcjqstirl.supabase.co";
+window.SUPABASE_ANON_KEY = "sb_publishable_j3eq4ZBBrcvpl6KyOhqEEQ_Twl-7jLg";
+</script>
 </head>
 <body>
 <x-dc>
@@ -27,7 +37,7 @@ button{font-family:var(--font-body)}
   <div style="width:52px;height:52px;border-radius:16px;background:var(--color-accent-900);display:grid;place-items:center;color:var(--color-accent);margin-bottom:18px">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
   </div>
-  <h3 style="margin:0 0 4px;text-align:center">Agenda Habitaciones</h3>
+  <h3 style="margin:0 0 4px;text-align:center">Agenda Gabinetes</h3>
   <p class="text-muted" style="margin:0 0 26px;font-size:13px;text-align:center">Ingresá tu PIN para continuar</p>
   <div style="display:flex;gap:14px;margin-bottom:8px">
     <sc-for list="{{ pinCells }}" as="c" hint-placeholder-count="4">
@@ -64,11 +74,10 @@ button{font-family:var(--font-body)}
 
 <sc-if value="{{ isWide }}">
 <nav style="position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--color-surface);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;padding:22px 16px;gap:6px;z-index:20">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;padding:0 6px">
-    <div style="width: 34px; height: 34px; border-radius: 10px; background: var(--color-accent-900); display: grid; place-items: center; color: var(--color-accent-100); flex: none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
-    <div style="font-weight:600;font-size:14px;line-height:1.1">Agenda<br><span class="text-muted" style="font-size:11px;font-weight:400">Gabinetes</span></div>
+  <div style="display:flex;align-items:center;margin-bottom:22px;padding:4px 6px">
+    <img src="assets/logo-light.png" alt="Espacio Ibiza" style="width:100%;max-width:168px;height:auto;display:block">
   </div>
-  <button onClick="{{ tabDashboard }}" style="{{ side.dashboard }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</button>
+  <button onClick="{{ tabDashboard }}" style="{{ side.dashboard }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>Espacio Ibiza</button>
   <button onClick="{{ tabCalendar }}" style="{{ side.calendar }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18M8 2v4M16 2v4"></path></svg>Calendario</button>
   <button onClick="{{ tabReservations }}" style="{{ side.reservations }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Reservas</button>
   <button onClick="{{ tabExpenses }}" style="{{ side.expenses }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg>Gastos</button>
@@ -172,7 +181,7 @@ button{font-family:var(--font-body)}
         </sc-for>
       </div>
     </sc-for>
-    <p class="text-muted" style="font-size:11px;margin-top:12px">Cada barra son las 24 h del día por habitación; el color marca las horas ocupadas. Tocá un día para ver o agregar reservas.</p>
+    <p class="text-muted" style="font-size:11px;margin-top:12px">Cada barra son las 24 h del día por gabinete; el color marca las horas ocupadas. Tocá un día para ver la disponibilidad hora por hora.</p>
   </div>
   </sc-if>
 
@@ -180,12 +189,13 @@ button{font-family:var(--font-body)}
   <div>
     <div style="position:relative;margin-bottom:12px">
       <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--color-neutral-500);pointer-events:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
-      <input class="input" value="{{ search }}" onInput="{{ onSearch }}" placeholder="Buscar por nombre, teléfono o habitación" style="padding-left:36px;height:42px" aria-label="Buscar reservas">
+      <input class="input" value="{{ search }}" onInput="{{ onSearch }}" placeholder="Buscar por nombre, teléfono o gabinete" style="padding-left:36px;height:42px" aria-label="Buscar reservas">
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
       <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
         <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
       </sc-for>
+      <button onClick="{{ exportXlsx }}" style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;border:1px solid var(--color-neutral-800);background:transparent;color:var(--color-neutral-300)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Excel</button>
     </div>
     <sc-if value="{{ resEmpty }}">
       <div style="text-align:center;padding:48px 20px;color:var(--color-neutral-500)">
@@ -235,6 +245,7 @@ button{font-family:var(--font-body)}
       <span style="font-size:20px;font-weight:600">{{ expTotalFmt }}</span>
     </div>
     <button class="btn btn-primary btn-block" onClick="{{ addExpense }}" style="height:46px;margin-bottom:16px;gap:7px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Agregar gasto</button>
+    <button class="btn btn-secondary btn-block" onClick="{{ exportXlsx }}" style="height:44px;margin-bottom:16px;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Exportar reservas y gastos (Excel)</button>
     <sc-if value="{{ expEmpty }}">
       <div style="text-align:center;padding:44px 20px;color:var(--color-neutral-500)">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18"></path></svg>
@@ -284,7 +295,7 @@ button{font-family:var(--font-body)}
     </div>
     <div style="padding:4px 18px 18px;display:flex;flex-direction:column;gap:14px">
       <div class="field">
-        <label>Habitación</label>
+        <label>Gabinete</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <sc-for list="{{ roomOptions }}" as="o" hint-placeholder-count="2">
             <button onClick="{{ o.onSelect }}" style="{{ o.style }}"><span style="{{ o.dotStyle }}"></span>{{ o.name }}</button>
@@ -358,7 +369,7 @@ button{font-family:var(--font-body)}
         <div class="card elev-sm" style="padding:12px;gap:2px"><span class="text-muted" style="font-size:11px">{{ detail.lbl2 }}</span><span style="font-weight:600">{{ detail.val2 }}</span></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:0;margin:14px 0">
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Habitación</span><span style="font-size:13px">{{ detail.roomName }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Gabinete</span><span style="font-size:13px">{{ detail.roomName }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">{{ detail.durLabel }}</span><span style="font-size:13px">{{ detail.durVal }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Teléfono</span><span style="font-size:13px">{{ detail.phone }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Método de pago</span><span style="font-size:13px">{{ detail.payment }}</span></div>
@@ -382,6 +393,24 @@ button{font-family:var(--font-body)}
       <button onClick="{{ closeSheet }}" aria-label="Cerrar" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
     </div>
     <div style="padding:4px 18px 18px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:4px">
+        <sc-for list="{{ daySheet.rooms24 }}" as="rm" hint-placeholder-count="2">
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+              <span style="{{ rm.dotStyle }}"></span>
+              <span style="font-weight:600;font-size:13px;flex:1">{{ rm.name }}</span>
+              <span class="text-muted" style="font-size:11px">{{ rm.summary }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px">
+              <sc-for list="{{ rm.hours }}" as="h" hint-placeholder-count="24">
+                <div style="{{ h.style }}" title="{{ h.title }}">{{ h.hour }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <p class="text-muted" style="font-size:11px;margin:0">Franja 00:00 a 23:00. En negro las horas ocupadas; en blanco las disponibles.</p>
+      </div>
+      <div class="hr" style="margin:4px 0"></div>
       <sc-for list="{{ daySheet.items }}" as="r" hint-placeholder-count="1">
         <button onClick="{{ r.onOpen }}" style="{{ r.cardStyle }}">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -461,6 +490,14 @@ class Component extends DCLogic {
     try{res=JSON.parse(localStorage.getItem('ah_res')||'[]');}catch(e){}
     try{exp=JSON.parse(localStorage.getItem('ah_exp')||'[]');}catch(e){}
     try{unlocked=localStorage.getItem('ah_unlocked')==='1';}catch(e){}
+    // Supabase (opcional): activo sólo si hay URL + key y la librería cargó
+    this.db=null;this.remote=false;
+    try{
+      const U=window.SUPABASE_URL,K=window.SUPABASE_ANON_KEY;
+      if(U&&K&&window.supabase&&window.supabase.createClient){
+        this.db=window.supabase.createClient(U,K);this.remote=true;
+      }
+    }catch(e){}
     const now=new Date();
     this.rooms=[
       {id:'r1',name:'Gabinete I',short:'H1',color:'#5b8def',active:true},
@@ -489,6 +526,28 @@ class Component extends DCLogic {
       const upd=()=>this.setState({isWide:mq.matches});
       upd();
       if(mq.addEventListener)mq.addEventListener('change',upd); else mq.addListener(upd);
+    }catch(e){}
+    if(this.remote){
+      this.dbFetch();
+      try{
+        this.db.channel('espacio-ibiza-rt')
+          .on('postgres_changes',{event:'*',schema:'public',table:'reservas'},()=>this.dbFetch())
+          .on('postgres_changes',{event:'*',schema:'public',table:'gastos'},()=>this.dbFetch())
+          .subscribe();
+      }catch(e){}
+    }
+  }
+
+  uid(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();}catch(e){}return String(Date.now())+'-'+Math.random().toString(16).slice(2);}
+  async dbFetch(){
+    if(!this.remote)return;
+    try{
+      const [r,x]=await Promise.all([
+        this.db.from('reservas').select('*'),
+        this.db.from('gastos').select('*')
+      ]);
+      if(!r.error&&r.data){const l=r.data.map(o=>({...o,amount:Number(o.amount)||0}));this.persistRes(l);this.setState({reservations:l});}
+      if(!x.error&&x.data){const l=x.data.map(o=>({...o,amount:Number(o.amount)||0}));this.persistExp(l);this.setState({expenses:l});}
     }catch(e){}
   }
 
@@ -629,12 +688,14 @@ class Component extends DCLogic {
     if(f.amount===''||isNaN(amt)||amt<0)e.amount='Ingresá un monto válido (≥ 0).';
     if(f.phone&&!/^[0-9+\s()\-]{6,}$/.test(f.phone))e.phone='Teléfono inválido.';
     if(!e.dates&&this.candidateValid(f)&&this.hasConflict(f,f.id))
-      e.overlap='Esta habitación ya está reservada en alguno de los horarios seleccionados.';
+      e.overlap='Este gabinete ya está reservado en alguno de los horarios seleccionados.';
     if(Object.keys(e).length){this.setState({errors:e});if(e.overlap)this.toast('Horario superpuesto','x');return;}
     let list=this.state.reservations.slice();const now=new Date().toISOString();
-    if(f.id){list=list.map(r=>r.id===f.id?{...f,amount:amt,updated_at:now}:r);this.toast('Reserva modificada.','check');}
-    else{list.push({...f,id:Date.now(),amount:amt,created_at:now,updated_at:now});this.toast('Reserva creada correctamente.','check');}
+    let rec;
+    if(f.id){rec={...f,amount:amt,updated_at:now};list=list.map(r=>r.id===f.id?rec:r);this.toast('Reserva modificada.','check');}
+    else{rec={...f,id:this.uid(),amount:amt,created_at:now,updated_at:now};list.push(rec);this.toast('Reserva creada correctamente.','check');}
     this.persistRes(list);this.setState({reservations:list,sheet:null,errors:{}});
+    if(this.remote){this.db.from('reservas').upsert(rec).then(({error})=>{if(error)this.toast('No se pudo sincronizar','x');this.dbFetch();});}
   }
   saveExpense(){
     const f=this.state.expForm;const e={};
@@ -644,15 +705,17 @@ class Component extends DCLogic {
     if(!f.date)e.date='Elegí una fecha.';
     if(Object.keys(e).length){this.setState({expErrors:e});return;}
     let list=this.state.expenses.slice();const now=new Date().toISOString();
-    if(f.id){list=list.map(x=>x.id===f.id?{...f,amount:amt,updated_at:now}:x);this.toast('Gasto modificado.','check');}
-    else{list.push({...f,id:Date.now(),amount:amt,created_at:now,updated_at:now});this.toast('Gasto agregado.','check');}
+    let rec;
+    if(f.id){rec={...f,amount:amt,updated_at:now};list=list.map(x=>x.id===f.id?rec:x);this.toast('Gasto modificado.','check');}
+    else{rec={...f,id:this.uid(),amount:amt,created_at:now,updated_at:now};list.push(rec);this.toast('Gasto agregado.','check');}
     this.persistExp(list);this.setState({expenses:list,sheet:null,expErrors:{}});
+    if(this.remote){this.db.from('gastos').upsert(rec).then(({error})=>{if(error)this.toast('No se pudo sincronizar','x');this.dbFetch();});}
   }
   requestDeleteRes(id){this.setState({confirm:{title:'Eliminar reserva',msg:'¿Seguro que querés eliminar esta reserva?',kind:'res',id}});}
   requestDeleteExp(id){this.setState({confirm:{title:'Eliminar gasto',msg:'¿Seguro que querés eliminar este gasto?',kind:'exp',id}});}
   confirmOk(){const c=this.state.confirm;if(!c)return;
-    if(c.kind==='res'){const l=this.state.reservations.filter(r=>r.id!==c.id);this.persistRes(l);this.setState({reservations:l,confirm:null,sheet:null});this.toast('Reserva eliminada.','trash');}
-    else{const l=this.state.expenses.filter(x=>x.id!==c.id);this.persistExp(l);this.setState({expenses:l,confirm:null,sheet:null});this.toast('Gasto eliminado.','trash');}
+    if(c.kind==='res'){const l=this.state.reservations.filter(r=>r.id!==c.id);this.persistRes(l);this.setState({reservations:l,confirm:null,sheet:null});this.toast('Reserva eliminada.','trash');if(this.remote){this.db.from('reservas').delete().eq('id',c.id).then(({error})=>{if(error)this.toast('No se pudo sincronizar','x');this.dbFetch();});}}
+    else{const l=this.state.expenses.filter(x=>x.id!==c.id);this.persistExp(l);this.setState({expenses:l,confirm:null,sheet:null});this.toast('Gasto eliminado.','trash');if(this.remote){this.db.from('gastos').delete().eq('id',c.id).then(({error})=>{if(error)this.toast('No se pudo sincronizar','x');this.dbFetch();});}}
   }
   confirmCancel(){this.setState({confirm:null});}
   toast(msg,icon){const id=Date.now()+Math.random();this.setState(s=>({toasts:[...s.toasts,{id,msg,icon}]}));setTimeout(()=>this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})),2800);}
@@ -685,6 +748,64 @@ class Component extends DCLogic {
       cardStyle:'width:100%;text-align:left;background:var(--color-surface);border:0;box-shadow:var(--shadow-sm);border-radius:8px;padding:12px 14px;cursor:pointer'+(r.status==='Cancelada'?';opacity:.55':''),
       onOpen:()=>this.openDetail(r.id)
     };
+  }
+
+  exportXlsx(){
+    if(typeof XLSX==='undefined'){this.toast('El exportador aún no cargó, probá de nuevo','x');return;}
+    const R=this.state.reservations,E=this.state.expenses;
+    if(!R.length&&!E.length){this.toast('No hay datos para exportar','x');return;}
+    const dOf=(ts)=>{try{return ts?this.fmtDMY(this.isoOf(new Date(ts))):'';}catch(e){return'';}};
+    const resRows=R.slice().sort((a,b)=>{
+      const ka=a.start_date+' '+(this.isHours(a)?(a.start_time||''):''),kb=b.start_date+' '+(this.isHours(b)?(b.start_time||''):'');
+      return ka<kb?-1:ka>kb?1:0;
+    }).map(r=>{
+      const rm=this.roomOf(r.room_id)||{name:''};const hrs=this.isHours(r);const pagada=r.status==='Pagada';
+      return {
+        'Gabinete':rm.name,
+        'Huésped':r.guest_name||'',
+        'Teléfono':r.phone||'',
+        'Tipo':hrs?'Por horas':'Por día(s)',
+        'Fecha de alquiler':this.fmtDMY(r.start_date),
+        'Fecha fin':hrs?'':this.fmtDMY(r.end_date),
+        'Hora desde':hrs?(r.start_time||''):'',
+        'Hora hasta':hrs?(r.end_time||''):'',
+        'Duración':hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+        'Monto (ARS)':Number(r.amount)||0,
+        'Método de pago':r.payment_method||'',
+        'Estado':r.status||'',
+        'Fecha de pago':pagada?dOf(r.updated_at||r.created_at):'',
+        'Notas':r.notes||'',
+        'Registrada el':dOf(r.created_at)
+      };
+    });
+    const expRows=E.slice().sort((a,b)=>a.date<b.date?-1:1).map(x=>({
+      'Fecha':this.fmtDMY(x.date),
+      'Categoría':x.category||'',
+      'Descripción':x.description||'',
+      'Monto (ARS)':Number(x.amount)||0,
+      'Registrado el':dOf(x.created_at)
+    }));
+    const totIng=resRows.reduce((a,r)=>a+(r['Estado']==='Cancelada'?0:r['Monto (ARS)']),0);
+    const totGas=expRows.reduce((a,x)=>a+x['Monto (ARS)'],0);
+    const resumen=[
+      {'Concepto':'Reservas cargadas','Valor':resRows.length},
+      {'Concepto':'Ingresos por reservas (ARS)','Valor':totIng},
+      {'Concepto':'Gastos cargados','Valor':expRows.length},
+      {'Concepto':'Total de gastos (ARS)','Valor':totGas},
+      {'Concepto':'Saldo (ARS)','Valor':totIng-totGas},
+      {'Concepto':'Exportado el','Valor':this.fmtDMY(this.isoOf(new Date()))}
+    ];
+    const wb=XLSX.utils.book_new();
+    const wsRes=XLSX.utils.json_to_sheet(resRows.length?resRows:[{'Gabinete':'','Huésped':'','Teléfono':'','Tipo':'','Fecha de alquiler':'','Fecha fin':'','Hora desde':'','Hora hasta':'','Duración':'','Monto (ARS)':'','Método de pago':'','Estado':'','Fecha de pago':'','Notas':'','Registrada el':''}]);
+    wsRes['!cols']=[{wch:12},{wch:20},{wch:15},{wch:10},{wch:15},{wch:12},{wch:10},{wch:10},{wch:12},{wch:13},{wch:15},{wch:12},{wch:14},{wch:24},{wch:13}];
+    const wsExp=XLSX.utils.json_to_sheet(expRows.length?expRows:[{'Fecha':'','Categoría':'','Descripción':'','Monto (ARS)':'','Registrado el':''}]);
+    wsExp['!cols']=[{wch:13},{wch:15},{wch:26},{wch:13},{wch:13}];
+    const wsSum=XLSX.utils.json_to_sheet(resumen);wsSum['!cols']=[{wch:28},{wch:16}];
+    XLSX.utils.book_append_sheet(wb,wsRes,'Reservas');
+    XLSX.utils.book_append_sheet(wb,wsExp,'Gastos');
+    XLSX.utils.book_append_sheet(wb,wsSum,'Resumen');
+    try{XLSX.writeFile(wb,'espacio-ibiza-'+this.isoOf(new Date())+'.xlsx');this.toast('Excel exportado','check');}
+    catch(e){this.toast('No se pudo exportar','x');}
   }
 
   renderVals(){
@@ -734,7 +855,7 @@ class Component extends DCLogic {
       row.push({label:String(cur.getDate()),bars,
         cellStyle:'display:flex;flex-direction:column;align-items:center;gap:4px;border:0;cursor:pointer;border-radius:8px;padding:5px 2px;min-height:52px;'+(inM?'background:var(--color-surface);':'background:transparent;')+(isToday?'box-shadow:inset 0 0 0 1.5px var(--color-accent);':'box-shadow:inset 0 0 0 1px var(--color-neutral-900);'),
         numStyle:'font-size:12px;'+(inM?(isToday?'color:var(--color-accent);font-weight:700':'color:var(--color-text)'):'color:var(--color-neutral-700)'),
-        onClick:dres.length?(()=>this.openDay(clickIso)):(()=>this.openNewReservation(clickIso))});
+        onClick:()=>this.openDay(clickIso)});
       cur=this.addDays(cur,1);
     }weeks.push(row);}
 
@@ -781,7 +902,7 @@ class Component extends DCLogic {
     let durPreview='';
     if(this.isHours(f)){const s=this.tmin(f.start_time),e=this.tmin(f.end_time);if(s!=null&&e!=null&&e>s)durPreview=this.fmtDur(e-s);}
     else if(f.start_date&&f.end_date&&this.parseIso(f.end_date)>this.parseIso(f.start_date))durPreview=this.nights(f.start_date,f.end_date)+' noches';
-    const liveOverlap=(this.candidateValid(f)&&this.hasConflict(f,f.id))?'Esta habitación ya está reservada en alguno de los horarios seleccionados.':'';
+    const liveOverlap=(this.candidateValid(f)&&this.hasConflict(f,f.id))?'Este gabinete ya está reservado en alguno de los horarios seleccionados.':'';
 
     let detail={};
     if(sh&&sh.type==='detail'){const r=S.reservations.find(x=>x.id===sh.id);if(r){const c=this.resCard(r);const hrs=this.isHours(r);
@@ -791,14 +912,38 @@ class Component extends DCLogic {
         durLabel:hrs?'Duración':'Noches',durVal:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
         phone:r.phone||'—',payment:r.payment_method,notes:r.notes?r.notes:'—',onEdit:()=>this.openEdit(r),onDelete:()=>this.requestDeleteRes(r.id),onWa:()=>this.whatsapp(r)};}}
 
-    let daySheet={items:[]};
-    if(sh&&sh.type==='day'){const items=this.reservationsOn(sh.iso).map(r=>this.resCard(r));daySheet={title:this.fmtDMY(sh.iso),items,onNew:()=>this.openNewReservation(sh.iso)};}
+    let daySheet={items:[],rooms24:[]};
+    if(sh&&sh.type==='day'){
+      const items=this.reservationsOn(sh.iso).map(r=>this.resCard(r));
+      const rooms24=this.rooms.filter(r=>r.active).map(rm=>{
+        let ivs=[];
+        this.state.reservations.forEach(r=>{if(r.room_id===rm.id&&r.status!=='Cancelada')ivs=ivs.concat(this.intervalsForDate(r,sh.iso));});
+        const merged=this.mergeIntervals(ivs);
+        const hours=[];
+        for(let h=0;h<24;h++){
+          const hs=h*60,he=(h+1)*60;
+          const occ=merged.some(iv=>iv[0]<he&&hs<iv[1]);
+          hours.push({
+            hour:this.pad(h),
+            title:this.pad(h)+':00 – '+(occ?'Reservado':'Libre'),
+            style:'height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;'+(occ?('background:#15161d;color:#ffffff;font-weight:500'):('background:#ffffff;color:#15161d;font-weight:700'))
+          });
+        }
+        const occMin=merged.reduce((a,iv)=>a+(iv[1]-iv[0]),0);
+        const occH=occMin/60;
+        return {name:rm.name,
+          dotStyle:'width:10px;height:10px;border-radius:50%;background:'+rm.color+';display:inline-block',
+          summary:occMin>0?((Number.isInteger(occH)?occH:occH.toFixed(1))+' h ocupadas'):'Libre todo el día',
+          hours};
+      });
+      daySheet={title:this.fmtDMY(sh.iso),items,rooms24,onNew:()=>this.openNewReservation(sh.iso)};
+    }
 
     const xf=S.expForm;
     const toastView=S.toasts.map(t=>({msg:t.msg,isCheck:t.icon==='check',isTrash:t.icon==='trash',isX:t.icon==='x',iconStyle:'display:grid;place-items:center;color:'+(t.icon==='check'?'#54c07a':t.icon==='trash'?'#e8697d':'#e8697d')}));
 
     const isWide=S.isWide;
-    const titles={dashboard:'Dashboard',calendar:'Calendario',reservations:'Reservas',expenses:'Gastos'};
+    const titles={dashboard:'Espacio Ibiza',calendar:'Calendario',reservations:'Reservas',expenses:'Gastos'};
 
     return {
       showLock:!S.unlocked,
@@ -824,6 +969,7 @@ class Component extends DCLogic {
       balanceStyle:'font-size:30px;font-weight:700;line-height:1.1;margin:2px 0;color:'+(balance>=0?'var(--color-text)':'#e8697d'),
       resCount, roomStats,
       quickNewRes:()=>this.openNewReservation(),quickNewExp:()=>this.openExpense(),
+      exportXlsx:()=>this.exportXlsx(),
       weekdays, legend, weeks,
       search:S.search, onSearch:(e)=>this.setState({search:e.target.value}),
       filters, groups, resEmpty:S.reservations.length===0, resNoResults:S.reservations.length>0&&filtered.length===0,
