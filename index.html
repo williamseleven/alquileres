@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -733,7 +733,7 @@ class Component extends DCLogic {
     const rm=this.roomOf(r.room_id)||{color:'#888',name:'',short:'?'};
     const stStyle=(bg,fg,bd)=>'display:inline-flex;align-items:center;font-size:10px;padding:3px 8px;border-radius:6px;background:'+bg+';color:'+fg+';border:1px solid '+(bd||bg);
     let statusStyle;
-    if(r.status==='Pagada')statusStyle=stStyle('var(--color-accent-800)','var(--color-accent-100)');
+    if(r.status==='Pagada')statusStyle=stStyle('#1e4631','#79dfa4');
     else if(r.status==='Pendiente')statusStyle=stStyle('#5a4a1e','#f0d78a');
     else if(r.status==='Cancelada')statusStyle=stStyle('transparent','var(--color-neutral-500)','var(--color-neutral-700)');
     else statusStyle=stStyle('transparent','var(--color-accent)','var(--color-accent)');
