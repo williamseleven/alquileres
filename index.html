@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-337e1b16-1728-423e-b6ad-973c972762ab/styles.css">
+<script src="_ds/nocturne-337e1b16-1728-423e-b6ad-973c972762ab/_ds_bundle.js"></script>
+<style>
+@keyframes ahup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes ahfade{from{opacity:0}to{opacity:1}}
+@keyframes ahtoast{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ahpulse{0%,100%{opacity:.35}50%{opacity:.7}}
+*{-webkit-tap-highlight-color:transparent}
+input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.7)}
+button{font-family:var(--font-body)}
+</style>
+</helmet>
+<div style="min-height:100vh">
+
+<sc-if value="{{ showLock }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;animation:ahfade .3s ease">
+  <div style="width:52px;height:52px;border-radius:16px;background:var(--color-accent-900);display:grid;place-items:center;color:var(--color-accent);margin-bottom:18px">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+  </div>
+  <h3 style="margin:0 0 4px;text-align:center">Agenda Habitaciones</h3>
+  <p class="text-muted" style="margin:0 0 26px;font-size:13px;text-align:center">Ingresá tu PIN para continuar</p>
+  <div style="display:flex;gap:14px;margin-bottom:8px">
+    <sc-for list="{{ pinCells }}" as="c" hint-placeholder-count="4">
+      <div style="{{ c.style }}"></div>
+    </sc-for>
+  </div>
+  <div style="min-height:22px;margin-bottom:14px">
+    <sc-if value="{{ pinError }}"><span style="color:#e8697d;font-size:13px">{{ pinError }}</span></sc-if>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,74px);gap:12px;max-width:100%">
+    <sc-for list="{{ pinKeys }}" as="k" hint-placeholder-count="12">
+      <button onClick="{{ k.onClick }}" aria-label="{{ k.aria }}" style="{{ k.style }}">{{ k.label }}</button>
+    </sc-for>
+  </div>
+  <button class="btn btn-primary btn-block" onClick="{{ unlock }}" style="max-width:246px;height:48px;margin-top:20px">Ingresar</button>
+  <p class="text-muted" style="font-size:11px;margin-top:18px;text-align:center;max-width:280px">Prototipo — en producción el PIN se valida contra Supabase, no en el frontend.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{ showSkeleton }}">
+<div style="max-width:560px;margin:0 auto;padding:24px 16px;animation:ahfade .3s ease">
+  <div style="height:26px;width:130px;border-radius:8px;background:var(--color-surface);animation:ahpulse 1.2s infinite;margin-bottom:20px"></div>
+  <div style="height:96px;border-radius:8px;background:var(--color-surface);animation:ahpulse 1.2s infinite;margin-bottom:12px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div style="height:80px;border-radius:8px;background:var(--color-surface);animation:ahpulse 1.2s infinite"></div>
+    <div style="height:80px;border-radius:8px;background:var(--color-surface);animation:ahpulse 1.2s infinite"></div>
+  </div>
+  <div style="height:120px;border-radius:8px;background:var(--color-surface);animation:ahpulse 1.2s infinite"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showApp }}">
+<div style="animation:ahfade .25s ease">
+
+<sc-if value="{{ isWide }}">
+<nav style="position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--color-surface);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;padding:22px 16px;gap:6px;z-index:20">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;padding:0 6px">
+    <div style="width: 34px; height: 34px; border-radius: 10px; background: var(--color-accent-900); display: grid; place-items: center; color: var(--color-accent-100); flex: none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+    <div style="font-weight:600;font-size:14px;line-height:1.1">Agenda<br><span class="text-muted" style="font-size:11px;font-weight:400">Gabinetes</span></div>
+  </div>
+  <button onClick="{{ tabDashboard }}" style="{{ side.dashboard }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>Dashboard</button>
+  <button onClick="{{ tabCalendar }}" style="{{ side.calendar }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18M8 2v4M16 2v4"></path></svg>Calendario</button>
+  <button onClick="{{ tabReservations }}" style="{{ side.reservations }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Reservas</button>
+  <button onClick="{{ tabExpenses }}" style="{{ side.expenses }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg>Gastos</button>
+  <div style="flex:1"></div>
+  <button onClick="{{ logout }}" style="display:flex;align-items:center;gap:11px;background:none;border:0;cursor:pointer;padding:10px 12px;border-radius:8px;color:var(--color-neutral-500);font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg>Cerrar sesión</button>
+</nav>
+</sc-if>
+
+<div style="{{ shellStyle }}"><div style="{{ mainStyle }}">
+  <div style="display:flex;align-items:center;margin-bottom:14px">
+    <h4 style="margin:0;flex:1">{{ screenTitle }}</h4>
+    <sc-if value="{{ isNarrow }}">
+      <button onClick="{{ logout }}" aria-label="Cerrar sesión" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg></button>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ isDashboard }}">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <button class="btn btn-icon btn-secondary" onClick="{{ prevMonth }}" aria-label="Mes anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      <div style="flex:1;text-align:center;font-weight:600;font-size:16px">{{ monthLabel }}</div>
+      <button class="btn btn-icon btn-secondary" onClick="{{ nextMonth }}" aria-label="Mes siguiente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="btn btn-secondary" onClick="{{ goToday }}" style="height:36px">Hoy</button>
+    </div>
+
+    <div class="card elev-sm" style="margin-bottom:12px;padding:16px">
+      <div class="card-kicker">Saldo del mes</div>
+      <div style="{{ balanceStyle }}">{{ balanceFmt }}</div>
+      <div class="text-muted" style="font-size:11px">Ingresos − Gastos</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="card elev-sm" style="padding:14px">
+        <div class="text-muted" style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#54c07a;display:inline-block"></span>Ingresos</div>
+        <div style="font-size:19px;font-weight:600;margin-top:4px">{{ incomeFmt }}</div>
+      </div>
+      <div class="card elev-sm" style="padding:14px">
+        <div class="text-muted" style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#e8697d;display:inline-block"></span>Gastos</div>
+        <div style="font-size:19px;font-weight:600;margin-top:4px">{{ expenseFmt }}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <button class="btn btn-primary" onClick="{{ quickNewRes }}" style="height:46px;gap:7px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Nueva reserva</button>
+      <button class="btn btn-secondary" onClick="{{ quickNewExp }}" style="height:46px;gap:7px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Agregar gasto</button>
+    </div>
+
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+      <h6 style="margin:0">Ocupación</h6>
+      <span class="text-muted" style="font-size:12px">{{ resCount }} reservas este mes</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <sc-for list="{{ roomStats }}" as="r" hint-placeholder-count="2">
+        <div class="card elev-sm" style="padding:14px;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="{{ r.dotStyle }}"></span>
+            <span style="font-weight:600;font-size:14px;flex:1">{{ r.name }}</span>
+            <span style="font-weight:600;font-size:14px;color:var(--color-accent)">{{ r.occLabel }}</span>
+          </div>
+          <div style="height:8px;border-radius:99px;background:var(--color-neutral-900);overflow:hidden">
+            <div style="{{ r.barStyle }};height:100%;border-radius:99px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px" class="text-muted">
+            <span>{{ r.occNights }} hs ocupadas · {{ r.availNights }} hs disponibles</span>
+            <span>{{ r.incomeFmt }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isCalendar }}">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <button class="btn btn-icon btn-secondary" onClick="{{ prevMonth }}" aria-label="Mes anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      <div style="flex:1;text-align:center;font-weight:600;font-size:16px">{{ monthLabel }}</div>
+      <button class="btn btn-icon btn-secondary" onClick="{{ nextMonth }}" aria-label="Mes siguiente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="btn btn-secondary" onClick="{{ goToday }}" style="height:36px">Hoy</button>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:14px">
+      <sc-for list="{{ legend }}" as="l" hint-placeholder-count="2">
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px" class="text-muted"><span style="{{ l.dotStyle }}"></span>{{ l.name }}</span>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+      <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+        <div class="text-muted" style="text-align:center;font-size:11px;font-weight:500">{{ w }}</div>
+      </sc-for>
+    </div>
+    <sc-for list="{{ weeks }}" as="wk" hint-placeholder-count="5">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+        <sc-for list="{{ wk }}" as="d" hint-placeholder-count="7">
+          <button onClick="{{ d.onClick }}" style="{{ d.cellStyle }}">
+            <span style="{{ d.numStyle }}">{{ d.label }}</span>
+            <div style="display:flex;flex-direction:column;gap:2px;width:100%;padding:0 4px">
+              <sc-for list="{{ d.bars }}" as="b" hint-placeholder-count="2">
+                <div style="{{ b.style }}"></div>
+              </sc-for>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+    <p class="text-muted" style="font-size:11px;margin-top:12px">Cada barra son las 24 h del día por habitación; el color marca las horas ocupadas. Tocá un día para ver o agregar reservas.</p>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isReservations }}">
+  <div>
+    <div style="position:relative;margin-bottom:12px">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--color-neutral-500);pointer-events:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
+      <input class="input" value="{{ search }}" onInput="{{ onSearch }}" placeholder="Buscar por nombre, teléfono o habitación" style="padding-left:36px;height:42px" aria-label="Buscar reservas">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+        <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{ resEmpty }}">
+      <div style="text-align:center;padding:48px 20px;color:var(--color-neutral-500)">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>
+        <p style="margin:0;font-size:14px">Todavía no hay reservas.</p>
+        <p style="margin:4px 0 0;font-size:12px">Tocá + Nueva reserva para empezar.</p>
+      </div>
+    </sc-if>
+    <sc-if value="{{ resNoResults }}">
+      <div style="text-align:center;padding:40px 20px;color:var(--color-neutral-500)"><p style="margin:0;font-size:14px">Sin resultados para tu búsqueda.</p></div>
+    </sc-if>
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+      <sc-if value="{{ g.show }}">
+        <div style="margin-bottom:18px">
+          <h6 style="margin:0 0 8px">{{ g.title }}</h6>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+              <button onClick="{{ r.onOpen }}" style="{{ r.cardStyle }}">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="{{ r.roomStyle }}">{{ r.roomShort }}</span>
+                  <span style="font-weight:600;font-size:14px;flex:1;text-align:left">{{ r.guest }}</span>
+                  <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px" class="text-muted">
+                  <span>{{ r.dates }} · {{ r.nights }}</span>
+                  <span style="font-weight:600;color:var(--color-text)">{{ r.amountFmt }}</span>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </sc-for>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isExpenses }}">
+  <div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <button class="btn btn-icon btn-secondary" onClick="{{ prevMonth }}" aria-label="Mes anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      <div style="flex:1;text-align:center;font-weight:600;font-size:16px">{{ monthLabel }}</div>
+      <button class="btn btn-icon btn-secondary" onClick="{{ nextMonth }}" aria-label="Mes siguiente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="btn btn-secondary" onClick="{{ goToday }}" style="height:36px">Hoy</button>
+    </div>
+    <div class="card elev-sm" style="padding:14px;margin-bottom:14px;flex-direction:row;align-items:center;justify-content:space-between">
+      <span class="text-muted" style="font-size:12px">Total del mes</span>
+      <span style="font-size:20px;font-weight:600">{{ expTotalFmt }}</span>
+    </div>
+    <button class="btn btn-primary btn-block" onClick="{{ addExpense }}" style="height:46px;margin-bottom:16px;gap:7px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Agregar gasto</button>
+    <sc-if value="{{ expEmpty }}">
+      <div style="text-align:center;padding:44px 20px;color:var(--color-neutral-500)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18"></path></svg>
+        <p style="margin:0;font-size:14px">No hay gastos registrados este mes.</p>
+      </div>
+    </sc-if>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ expItems }}" as="e" hint-placeholder-count="2">
+        <div class="card elev-sm" style="padding:12px 14px;flex-direction:row;align-items:center;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px">{{ e.desc }}</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:3px">
+              <span class="tag tag-neutral">{{ e.cat }}</span>
+              <span class="text-muted" style="font-size:11px">{{ e.date }}</span>
+            </div>
+          </div>
+          <span style="font-weight:600;font-size:15px">{{ e.amountFmt }}</span>
+          <button onClick="{{ e.onEdit }}" aria-label="Editar gasto" class="btn btn-icon btn-secondary" style="width:34px;height:34px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
+          <button onClick="{{ e.onDelete }}" aria-label="Eliminar gasto" class="btn btn-icon btn-secondary" style="width:34px;height:34px;color:#e8697d"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+</div></div>
+
+<sc-if value="{{ isNarrow }}">
+<nav style="position:fixed;left:0;right:0;bottom:0;background:var(--color-surface);box-shadow:0 -1px 0 var(--color-neutral-800);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20">
+  <button onClick="{{ tabDashboard }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;cursor:pointer;padding:9px 0;min-height:58px;color:{{ navColor.dashboard }}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg><span style="font-size:10px;font-weight:500">Panel</span></button>
+  <button onClick="{{ tabCalendar }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;cursor:pointer;padding:9px 0;min-height:58px;color:{{ navColor.calendar }}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18M8 2v4M16 2v4"></path></svg><span style="font-size:10px;font-weight:500">Calendario</span></button>
+  <button onClick="{{ tabReservations }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;cursor:pointer;padding:9px 0;min-height:58px;color:{{ navColor.reservations }}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg><span style="font-size:10px;font-weight:500">Reservas</span></button>
+  <button onClick="{{ tabExpenses }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;cursor:pointer;padding:9px 0;min-height:58px;color:{{ navColor.expenses }}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg><span style="font-size:10px;font-weight:500">Gastos</span></button>
+</nav>
+</sc-if>
+
+<sc-if value="{{ showFab }}">
+<button onClick="{{ fabClick }}" aria-label="Nueva reserva" style="{{ fabStyle }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><span>Nueva reserva</span></button>
+</sc-if>
+
+<sc-if value="{{ sheetRes }}">
+<div style="position:fixed;inset:0;background:rgba(10,11,17,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center" onClick="{{ closeSheet }}">
+  <div onClick="{{ stop }}" style="width:100%;max-width:560px;max-height:94vh;overflow:auto;background:var(--color-bg);border-radius:18px 18px 0 0;box-shadow:var(--shadow-lg);animation:ahup .28s cubic-bezier(.2,.8,.2,1)">
+    <div style="position:sticky;top:0;background:var(--color-bg);display:flex;align-items:center;padding:16px 18px 10px;z-index:2">
+      <h4 style="margin:0;flex:1">{{ resFormTitle }}</h4>
+      <button onClick="{{ closeSheet }}" aria-label="Cerrar" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <div style="padding:4px 18px 18px;display:flex;flex-direction:column;gap:14px">
+      <div class="field">
+        <label>Habitación</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{ roomOptions }}" as="o" hint-placeholder-count="2">
+            <button onClick="{{ o.onSelect }}" style="{{ o.style }}"><span style="{{ o.dotStyle }}"></span>{{ o.name }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de reserva</label>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ setModeHours }}" style="{{ modeHoursStyle }}">Por horas</button>
+          <button onClick="{{ setModeNights }}" style="{{ modeNightsStyle }}">Por día(s)</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nombre del huésped *</label>
+        <input class="input" value="{{ fGuest }}" onInput="{{ onGuest }}" placeholder="Ej. Juan Pérez" style="height:42px">
+        <sc-if value="{{ errGuest }}"><span style="color:#e8697d;font-size:11px">{{ errGuest }}</span></sc-if>
+      </div>
+      <sc-if value="{{ isHoursMode }}">
+        <div class="field"><label>Fecha *</label><input type="date" class="input" value="{{ fStart }}" onInput="{{ onStart }}" style="height:42px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Hora desde *</label><input type="time" class="input" value="{{ fStartTime }}" onInput="{{ onStartTime }}" style="height:42px"></div>
+          <div class="field"><label>Hora hasta *</label><input type="time" class="input" value="{{ fEndTime }}" onInput="{{ onEndTime }}" style="height:42px"></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isNightsMode }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Ingreso *</label><input type="date" class="input" value="{{ fStart }}" onInput="{{ onStart }}" style="height:42px"></div>
+          <div class="field"><label>Salida *</label><input type="date" class="input" value="{{ fEnd }}" onInput="{{ onEnd }}" style="height:42px"></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ errDates }}"><span style="color:#e8697d;font-size:11px;margin-top:-6px">{{ errDates }}</span></sc-if>
+      <sc-if value="{{ nightsPreview }}"><span class="text-muted" style="font-size:12px;margin-top:-8px">{{ nightsPreview }}</span></sc-if>
+      <sc-if value="{{ overlapError }}">
+        <div style="background:var(--color-accent-900);border:1px solid #e8697d;color:#f3b4bd;border-radius:8px;padding:10px 12px;font-size:12px">{{ overlapError }}</div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Monto total *</label><input type="number" min="0" inputMode="numeric" class="input" value="{{ fAmount }}" onInput="{{ onAmount }}" placeholder="0" style="height:42px"></div>
+        <div class="field"><label>Teléfono</label><input type="tel" class="input" value="{{ fPhone }}" onInput="{{ onPhone }}" placeholder="+54 9 11 ..." style="height:42px"></div>
+      </div>
+      <sc-if value="{{ errAmount }}"><span style="color:#e8697d;font-size:11px;margin-top:-6px">{{ errAmount }}</span></sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Método de pago</label><select class="input" value="{{ fPayment }}" onChange="{{ onPayment }}" style="height:42px"><sc-for list="{{ paymentOptions }}" as="p"><option value="{{ p }}">{{ p }}</option></sc-for></select></div>
+        <div class="field"><label>Estado</label><select class="input" value="{{ fStatus }}" onChange="{{ onStatus }}" style="height:42px"><sc-for list="{{ statusOptions }}" as="s"><option value="{{ s }}">{{ s }}</option></sc-for></select></div>
+      </div>
+      <div class="field"><label>Notas</label><textarea class="input" value="{{ fNotes }}" onInput="{{ onNotes }}" placeholder="Opcional"></textarea></div>
+      <div style="display:flex;gap:10px;position:sticky;bottom:0;background:var(--color-bg);padding:12px 0 4px">
+        <button class="btn btn-secondary" onClick="{{ closeSheet }}" style="flex:1;height:48px">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveRes }}" style="flex:2;height:48px">Guardar reserva</button>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetDetail }}">
+<div style="position:fixed;inset:0;background:rgba(10,11,17,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center" onClick="{{ closeSheet }}">
+  <div onClick="{{ stop }}" style="width:100%;max-width:560px;max-height:94vh;overflow:auto;background:var(--color-bg);border-radius:18px 18px 0 0;box-shadow:var(--shadow-lg);animation:ahup .28s cubic-bezier(.2,.8,.2,1)">
+    <div style="position:sticky;top:0;background:var(--color-bg);display:flex;align-items:center;padding:16px 18px 10px">
+      <span style="{{ detail.roomStyle }}">{{ detail.roomShort }}</span>
+      <h4 style="margin:0 0 0 10px;flex:1">{{ detail.guest }}</h4>
+      <button onClick="{{ closeSheet }}" aria-label="Cerrar" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <div style="padding:4px 18px 18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="{{ detail.statusStyle }}">{{ detail.status }}</span>
+        <span style="font-size:22px;font-weight:600">{{ detail.amountFmt }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px">
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="text-muted" style="font-size:11px">{{ detail.lbl1 }}</span><span style="font-weight:600">{{ detail.val1 }}</span></div>
+        <div class="card elev-sm" style="padding:12px;gap:2px"><span class="text-muted" style="font-size:11px">{{ detail.lbl2 }}</span><span style="font-weight:600">{{ detail.val2 }}</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0;margin:14px 0">
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Habitación</span><span style="font-size:13px">{{ detail.roomName }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">{{ detail.durLabel }}</span><span style="font-size:13px">{{ detail.durVal }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Teléfono</span><span style="font-size:13px">{{ detail.phone }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--color-neutral-900)"><span class="text-muted" style="font-size:13px">Método de pago</span><span style="font-size:13px">{{ detail.payment }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;gap:16px"><span class="text-muted" style="font-size:13px">Notas</span><span style="font-size:13px;text-align:right">{{ detail.notes }}</span></div>
+      </div>
+      <button class="btn btn-primary btn-block" onClick="{{ detail.onWa }}" style="height:48px;gap:8px;margin-bottom:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg>Contactar por WhatsApp</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" onClick="{{ detail.onEdit }}" style="flex:1;height:46px;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Editar</button>
+        <button class="btn btn-secondary" onClick="{{ detail.onDelete }}" style="flex:1;height:46px;gap:6px;color:#e8697d"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetDay }}">
+<div style="position:fixed;inset:0;background:rgba(10,11,17,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center" onClick="{{ closeSheet }}">
+  <div onClick="{{ stop }}" style="width:100%;max-width:560px;max-height:80vh;overflow:auto;background:var(--color-bg);border-radius:18px 18px 0 0;box-shadow:var(--shadow-lg);animation:ahup .28s cubic-bezier(.2,.8,.2,1)">
+    <div style="position:sticky;top:0;background:var(--color-bg);display:flex;align-items:center;padding:16px 18px 10px">
+      <h4 style="margin:0;flex:1">{{ daySheet.title }}</h4>
+      <button onClick="{{ closeSheet }}" aria-label="Cerrar" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <div style="padding:4px 18px 18px;display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ daySheet.items }}" as="r" hint-placeholder-count="1">
+        <button onClick="{{ r.onOpen }}" style="{{ r.cardStyle }}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="{{ r.roomStyle }}">{{ r.roomShort }}</span>
+            <span style="font-weight:600;font-size:14px;flex:1;text-align:left">{{ r.guest }}</span>
+            <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px" class="text-muted"><span>{{ r.dates }} · {{ r.nights }}</span><span style="font-weight:600;color:var(--color-text)">{{ r.amountFmt }}</span></div>
+        </button>
+      </sc-for>
+      <button class="btn btn-primary btn-block" onClick="{{ daySheet.onNew }}" style="height:46px;gap:7px;margin-top:6px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Nueva reserva este día</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetExpense }}">
+<div style="position:fixed;inset:0;background:rgba(10,11,17,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center" onClick="{{ closeSheet }}">
+  <div onClick="{{ stop }}" style="width:100%;max-width:560px;max-height:90vh;overflow:auto;background:var(--color-bg);border-radius:18px 18px 0 0;box-shadow:var(--shadow-lg);animation:ahup .28s cubic-bezier(.2,.8,.2,1)">
+    <div style="position:sticky;top:0;background:var(--color-bg);display:flex;align-items:center;padding:16px 18px 10px">
+      <h4 style="margin:0;flex:1">{{ expFormTitle }}</h4>
+      <button onClick="{{ closeSheet }}" aria-label="Cerrar" class="btn btn-icon btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </div>
+    <div style="padding:4px 18px 18px;display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label>Descripción *</label><input class="input" value="{{ xDesc }}" onInput="{{ onXDesc }}" placeholder="Ej. Limpieza semanal" style="height:42px"><sc-if value="{{ errXDesc }}"><span style="color:#e8697d;font-size:11px">{{ errXDesc }}</span></sc-if></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Fecha *</label><input type="date" class="input" value="{{ xDate }}" onInput="{{ onXDate }}" style="height:42px"></div>
+        <div class="field"><label>Monto *</label><input type="number" min="0" inputMode="numeric" class="input" value="{{ xAmount }}" onInput="{{ onXAmount }}" placeholder="0" style="height:42px"></div>
+      </div>
+      <sc-if value="{{ errXAmount }}"><span style="color:#e8697d;font-size:11px;margin-top:-6px">{{ errXAmount }}</span></sc-if>
+      <div class="field"><label>Categoría</label><select class="input" value="{{ xCategory }}" onChange="{{ onXCategory }}" style="height:42px"><sc-for list="{{ categoryOptions }}" as="c"><option value="{{ c }}">{{ c }}</option></sc-for></select></div>
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button class="btn btn-secondary" onClick="{{ closeSheet }}" style="flex:1;height:48px">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveExp }}" style="flex:2;height:48px">Guardar gasto</button>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ confirmActive }}">
+<div style="position:fixed;inset:0;z-index:50;background:rgba(10,11,17,.6);display:grid;place-items:center;padding:20px" onClick="{{ confirmCancel }}">
+  <div onClick="{{ stop }}" class="dialog elev-lg" style="animation:ahfade .2s ease">
+    <div class="dialog-title">{{ confirmTitle }}</div>
+    <div class="dialog-body">{{ confirmMsg }}</div>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary" onClick="{{ confirmCancel }}" style="height:44px;min-width:96px">Cancelar</button>
+      <button class="btn btn-primary" onClick="{{ confirmOk }}" style="height:44px;min-width:96px;color:#e8697d;border-color:#e8697d">Eliminar</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</sc-if>
+
+<div style="position:fixed;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:60;pointer-events:none;padding:0 16px">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div style="display:flex;align-items:center;gap:9px;background:var(--color-neutral-900);color:var(--color-text);box-shadow:var(--shadow-md);border-radius:99px;padding:11px 18px;font-size:13px;animation:ahtoast .3s ease;max-width:100%">
+      <span style="{{ t.iconStyle }}">
+        <sc-if value="{{ t.isCheck }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+        <sc-if value="{{ t.isTrash }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></sc-if>
+        <sc-if value="{{ t.isX }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></sc-if>
+      </span>
+      {{ t.msg }}
+    </div>
+  </sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    let res=[],exp=[],unlocked=false;
+    try{res=JSON.parse(localStorage.getItem('ah_res')||'[]');}catch(e){}
+    try{exp=JSON.parse(localStorage.getItem('ah_exp')||'[]');}catch(e){}
+    try{unlocked=localStorage.getItem('ah_unlocked')==='1';}catch(e){}
+    const now=new Date();
+    this.rooms=[
+      {id:'r1',name:'Gabinete I',short:'H1',color:'#5b8def',active:true},
+      {id:'r2',name:'Gabinete II',short:'H2',color:'#54c07a',active:true}
+    ];
+    this.state={
+      unlocked, ready:false, isWide:false,
+      pin:'', pinError:'',
+      tab:'dashboard',
+      cursor:{y:now.getFullYear(),m:now.getMonth()},
+      reservations:res, expenses:exp,
+      sheet:null,
+      form:this.blankForm(), errors:{},
+      expForm:this.blankExpense(), expErrors:{},
+      confirm:null, search:'', resFilter:'all',
+      toasts:[]
+    };
+  }
+  blankForm(){return{id:null,room_id:'r1',mode:'hours',guest_name:'',phone:'',start_date:'',end_date:'',start_time:'14:00',end_time:'18:00',amount:'',payment_method:'Efectivo',status:'Reservada',notes:''};}
+  blankExpense(){return{id:null,date:this.isoOf(new Date()),amount:'',description:'',category:'Limpieza'};}
+
+  componentDidMount(){
+    setTimeout(()=>this.setState({ready:true}),650);
+    try{
+      const mq=window.matchMedia('(min-width:820px)');
+      const upd=()=>this.setState({isWide:mq.matches});
+      upd();
+      if(mq.addEventListener)mq.addEventListener('change',upd); else mq.addListener(upd);
+    }catch(e){}
+  }
+
+  /* date + money helpers */
+  pad(n){return String(n).padStart(2,'0');}
+  isoOf(d){return d.getFullYear()+'-'+this.pad(d.getMonth()+1)+'-'+this.pad(d.getDate());}
+  parseIso(s){const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}
+  addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  fmtDMY(s){if(!s)return'';const p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+  nights(a,b){if(!a||!b)return 0;return Math.round((this.parseIso(b)-this.parseIso(a))/86400000);}
+  money(n){return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n)||0);}
+  daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+  inMonth(iso,y,m){const d=this.parseIso(iso);return d.getFullYear()===y&&d.getMonth()===m;}
+
+  /* hourly model */
+  isHours(r){return r.mode==='hours';}
+  tmin(t){if(!t)return null;const p=t.split(':').map(Number);return p[0]*60+p[1];}
+  fmtDur(mins){const h=mins/60;return (Number.isInteger(h)?h:h.toFixed(1))+' h';}
+  datesOf(r){
+    if(this.isHours(r))return[r.start_date];
+    const out=[];const end=this.parseIso(r.end_date);
+    for(let dt=this.parseIso(r.start_date);dt<end;dt=this.addDays(dt,1))out.push(this.isoOf(dt));
+    return out;
+  }
+  intervalsForDate(r,iso){
+    if(this.isHours(r)){
+      if(r.start_date!==iso)return[];
+      const s=this.tmin(r.start_time),e=this.tmin(r.end_time);
+      if(s==null||e==null||e<=s)return[];
+      return[[s,e]];
+    }
+    return(r.start_date<=iso&&iso<r.end_date)?[[0,1440]]:[];
+  }
+  mergeIntervals(list){
+    if(!list.length)return[];
+    const a=list.slice().sort((x,y)=>x[0]-y[0]);
+    const out=[a[0].slice()];
+    for(let i=1;i<a.length;i++){const last=out[out.length-1];if(a[i][0]<=last[1])last[1]=Math.max(last[1],a[i][1]);else out.push(a[i].slice());}
+    return out;
+  }
+  barStyle(ivs,color){
+    const base='height:4px;border-radius:2px;background-color:var(--color-neutral-900)';
+    if(!ivs.length)return base;
+    let g='linear-gradient(90deg',cur=0;
+    ivs.forEach(iv=>{const a=iv[0]/1440*100,b=iv[1]/1440*100;g+=', transparent '+cur+'%, transparent '+a+'%, '+color+' '+a+'%, '+color+' '+b+'%';cur=b;});
+    g+=', transparent '+cur+'%, transparent 100%)';
+    return base+';background-image:'+g;
+  }
+  candidateValid(f){
+    if(this.isHours(f)){const s=this.tmin(f.start_time),e=this.tmin(f.end_time);return!!(f.room_id&&f.start_date&&s!=null&&e!=null&&e>s);}
+    return!!(f.room_id&&f.start_date&&f.end_date&&this.parseIso(f.end_date)>this.parseIso(f.start_date));
+  }
+  hasConflict(cand,ignore){
+    return this.state.reservations.some(r=>{
+      if(r.room_id!==cand.room_id||r.id===ignore||r.status==='Cancelada')return false;
+      return this.datesOf(cand).some(d=>{
+        const ci=this.intervalsForDate(cand,d),ei=this.intervalsForDate(r,d);
+        return ci.some(a=>ei.some(b=>a[0]<b[1]&&b[0]<a[1]));
+      });
+    });
+  }
+
+  nightsInMonth(r,y,m){
+    if(r.status==='Cancelada'||this.isHours(r))return 0;
+    let c=0;const end=this.parseIso(r.end_date);
+    for(let dt=this.parseIso(r.start_date);dt<end;dt=this.addDays(dt,1)){
+      if(dt.getFullYear()===y&&dt.getMonth()===m)c++;
+    }
+    return c;
+  }
+  reservationsOn(iso){return this.state.reservations.filter(r=>r.status!=='Cancelada'&&this.intervalsForDate(r,iso).length>0);}
+  occupiedMinutesRoomMonth(roomId,y,m){
+    let sum=0;
+    this.state.reservations.forEach(r=>{
+      if(r.room_id!==roomId||r.status==='Cancelada')return;
+      this.datesOf(r).forEach(d=>{if(!this.inMonth(d,y,m))return;this.intervalsForDate(r,d).forEach(iv=>sum+=iv[1]-iv[0]);});
+    });
+    return sum;
+  }
+  incomeForMonth(y,m,roomId){
+    let sum=0;
+    this.state.reservations.forEach(r=>{
+      if(r.status==='Cancelada')return;
+      if(roomId&&r.room_id!==roomId)return;
+      if(this.isHours(r)){if(this.inMonth(r.start_date,y,m))sum+=Number(r.amount)||0;return;}
+      const n=this.nights(r.start_date,r.end_date);
+      if(n<=0)return;
+      sum+=(Number(r.amount)/n)*this.nightsInMonth(r,y,m);
+    });
+    return Math.round(sum);
+  }
+  monthExpenses(y,m){return this.state.expenses.filter(x=>{const d=this.parseIso(x.date);return d.getFullYear()===y&&d.getMonth()===m;});}
+  roomOf(id){return this.rooms.find(r=>r.id===id);}
+
+  persistRes(l){try{localStorage.setItem('ah_res',JSON.stringify(l));}catch(e){}}
+  persistExp(l){try{localStorage.setItem('ah_exp',JSON.stringify(l));}catch(e){}}
+
+  /* pin */
+  pinPress(d){if(this.state.pin.length>=4)return;const p=this.state.pin+d;this.setState({pin:p,pinError:''});if(p.length===4)setTimeout(()=>this.tryUnlock(p),140);}
+  pinBack(){this.setState(s=>({pin:s.pin.slice(0,-1),pinError:''}));}
+  tryUnlock(p){
+    p=p||this.state.pin;
+    if(p==='6699'){try{localStorage.setItem('ah_unlocked','1');}catch(e){}this.setState({unlocked:true,pin:'',pinError:'',ready:false});setTimeout(()=>this.setState({ready:true}),500);}
+    else this.setState({pin:'',pinError:'PIN incorrecto. Intentá de nuevo.'});
+  }
+  logout(){try{localStorage.setItem('ah_unlocked','0');}catch(e){}this.setState({unlocked:false,pin:'',tab:'dashboard',sheet:null,confirm:null});}
+
+  /* nav + month */
+  setTab(t){this.setState({tab:t});}
+  prevMonth(){this.setState(s=>{let m=s.cursor.m-1,y=s.cursor.y;if(m<0){m=11;y--;}return{cursor:{y,m}};});}
+  nextMonth(){this.setState(s=>{let m=s.cursor.m+1,y=s.cursor.y;if(m>11){m=0;y++;}return{cursor:{y,m}};});}
+  goToday(){const n=new Date();this.setState({cursor:{y:n.getFullYear(),m:n.getMonth()}});}
+
+  /* sheets */
+  openNewReservation(dateIso){const f=this.blankForm();if(dateIso)f.start_date=dateIso;this.setState({form:f,errors:{},sheet:{type:'res'}});}
+  setMode(mode){this.setState(s=>{const f={...s.form,mode};if(mode==='hours'){if(!f.start_time)f.start_time='14:00';if(!f.end_time)f.end_time='18:00';}else if(f.start_date&&!f.end_date){f.end_date=this.isoOf(this.addDays(this.parseIso(f.start_date),1));}return{form:f,errors:{}};});}
+  onStartTimeChange(v){this.setState(s=>{const f={...s.form,start_time:v};const sm=this.tmin(v),em=this.tmin(f.end_time);if(sm!=null&&(em==null||em<=sm)){const ne=Math.min(sm+240,1439);f.end_time=this.pad(Math.floor(ne/60))+':'+this.pad(ne%60);}return{form:f,errors:{...s.errors,dates:undefined,overlap:undefined}};});}
+  openEdit(r){this.setState({form:{...this.blankForm(),...r,amount:String(r.amount)},errors:{},sheet:{type:'res'}});}
+  openDetail(id){this.setState({sheet:{type:'detail',id}});}
+  openDay(iso){this.setState({sheet:{type:'day',iso}});}
+  openExpense(x){this.setState({expForm:x?{...x,amount:String(x.amount)}:this.blankExpense(),expErrors:{},sheet:{type:'exp'}});}
+  closeSheet(){this.setState({sheet:null});}
+  updateForm(k,v){this.setState(s=>({form:{...s.form,[k]:v},errors:{}}));}
+  updateExp(k,v){this.setState(s=>({expForm:{...s.expForm,[k]:v}}));}
+
+  saveReservation(){
+    const f=this.state.form;const e={};
+    if(!f.guest_name.trim())e.guest='Ingresá el nombre del huésped.';
+    if(this.isHours(f)){
+      if(!f.start_date)e.dates='Elegí la fecha.';
+      else if(!f.start_time||!f.end_time)e.dates='Ingresá hora desde y hasta.';
+      else if(this.tmin(f.end_time)<=this.tmin(f.start_time))e.dates='La hora de fin debe ser posterior a la de inicio.';
+    }else{
+      if(!f.start_date||!f.end_date)e.dates='Elegí fecha de ingreso y salida.';
+      else if(this.parseIso(f.end_date)<=this.parseIso(f.start_date))e.dates='La salida debe ser posterior al ingreso.';
+    }
+    const amt=Number(f.amount);
+    if(f.amount===''||isNaN(amt)||amt<0)e.amount='Ingresá un monto válido (≥ 0).';
+    if(f.phone&&!/^[0-9+\s()\-]{6,}$/.test(f.phone))e.phone='Teléfono inválido.';
+    if(!e.dates&&this.candidateValid(f)&&this.hasConflict(f,f.id))
+      e.overlap='Esta habitación ya está reservada en alguno de los horarios seleccionados.';
+    if(Object.keys(e).length){this.setState({errors:e});if(e.overlap)this.toast('Horario superpuesto','x');return;}
+    let list=this.state.reservations.slice();const now=new Date().toISOString();
+    if(f.id){list=list.map(r=>r.id===f.id?{...f,amount:amt,updated_at:now}:r);this.toast('Reserva modificada.','check');}
+    else{list.push({...f,id:Date.now(),amount:amt,created_at:now,updated_at:now});this.toast('Reserva creada correctamente.','check');}
+    this.persistRes(list);this.setState({reservations:list,sheet:null,errors:{}});
+  }
+  saveExpense(){
+    const f=this.state.expForm;const e={};
+    if(!f.description.trim())e.desc='Ingresá una descripción.';
+    const amt=Number(f.amount);
+    if(f.amount===''||isNaN(amt)||amt<=0)e.amount='El monto debe ser mayor a 0.';
+    if(!f.date)e.date='Elegí una fecha.';
+    if(Object.keys(e).length){this.setState({expErrors:e});return;}
+    let list=this.state.expenses.slice();const now=new Date().toISOString();
+    if(f.id){list=list.map(x=>x.id===f.id?{...f,amount:amt,updated_at:now}:x);this.toast('Gasto modificado.','check');}
+    else{list.push({...f,id:Date.now(),amount:amt,created_at:now,updated_at:now});this.toast('Gasto agregado.','check');}
+    this.persistExp(list);this.setState({expenses:list,sheet:null,expErrors:{}});
+  }
+  requestDeleteRes(id){this.setState({confirm:{title:'Eliminar reserva',msg:'¿Seguro que querés eliminar esta reserva?',kind:'res',id}});}
+  requestDeleteExp(id){this.setState({confirm:{title:'Eliminar gasto',msg:'¿Seguro que querés eliminar este gasto?',kind:'exp',id}});}
+  confirmOk(){const c=this.state.confirm;if(!c)return;
+    if(c.kind==='res'){const l=this.state.reservations.filter(r=>r.id!==c.id);this.persistRes(l);this.setState({reservations:l,confirm:null,sheet:null});this.toast('Reserva eliminada.','trash');}
+    else{const l=this.state.expenses.filter(x=>x.id!==c.id);this.persistExp(l);this.setState({expenses:l,confirm:null,sheet:null});this.toast('Gasto eliminado.','trash');}
+  }
+  confirmCancel(){this.setState({confirm:null});}
+  toast(msg,icon){const id=Date.now()+Math.random();this.setState(s=>({toasts:[...s.toasts,{id,msg,icon}]}));setTimeout(()=>this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})),2800);}
+  whatsapp(r){
+    const digits=(r.phone||'').replace(/\D/g,'');
+    if(!digits){this.toast('Sin teléfono cargado','x');return;}
+    let b=digits.startsWith('54')?digits:'54'+digits.replace(/^0/,'');
+    if(!b.startsWith('549'))b='549'+b.slice(2);
+    window.open('https://wa.me/'+b,'_blank');
+  }
+
+  navStyle(tab){const active=this.state.tab===tab;return 'display:flex;align-items:center;gap:11px;background:'+(active?'var(--color-accent-900)':'none')+';border:0;cursor:pointer;padding:10px 12px;border-radius:8px;font-size:14px;color:'+(active?'var(--color-accent)':'var(--color-neutral-400)');}
+  modeBtn(active){return 'flex:1;padding:9px 0;border-radius:8px;font-size:13px;cursor:pointer;background:'+(active?'var(--color-accent-900)':'var(--color-surface)')+';border:1px solid '+(active?'var(--color-accent)':'var(--color-divider)')+';color:'+(active?'var(--color-accent)':'var(--color-text)');}
+  resCard(r){
+    const rm=this.roomOf(r.room_id)||{color:'#888',name:'',short:'?'};
+    const stStyle=(bg,fg,bd)=>'display:inline-flex;align-items:center;font-size:10px;padding:3px 8px;border-radius:6px;background:'+bg+';color:'+fg+';border:1px solid '+(bd||bg);
+    let statusStyle;
+    if(r.status==='Pagada')statusStyle=stStyle('var(--color-accent-800)','var(--color-accent-100)');
+    else if(r.status==='Pendiente')statusStyle=stStyle('#5a4a1e','#f0d78a');
+    else if(r.status==='Cancelada')statusStyle=stStyle('transparent','var(--color-neutral-500)','var(--color-neutral-700)');
+    else statusStyle=stStyle('transparent','var(--color-accent)','var(--color-accent)');
+    const hrs=this.isHours(r);
+    return {
+      id:r.id, guest:r.guest_name, roomShort:rm.short, roomName:rm.name,
+      roomStyle:'display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 6px;border-radius:6px;font-size:10px;font-weight:600;background:'+rm.color+'26;color:'+rm.color+';border:1px solid '+rm.color+'66',
+      statusStyle, status:r.status,
+      dates:hrs?(this.fmtDMY(r.start_date)+' · '+r.start_time+'–'+r.end_time):(this.fmtDMY(r.start_date)+' → '+this.fmtDMY(r.end_date)),
+      nights:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+      amountFmt:this.money(r.amount),
+      cardStyle:'width:100%;text-align:left;background:var(--color-surface);border:0;box-shadow:var(--shadow-sm);border-radius:8px;padding:12px 14px;cursor:pointer'+(r.status==='Cancelada'?';opacity:.55':''),
+      onOpen:()=>this.openDetail(r.id)
+    };
+  }
+
+  renderVals(){
+    const S=this.state,y=S.cursor.y,m=S.cursor.m;
+    const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const monthLabel=MES[m]+' '+y;
+    const todayIso=this.isoOf(new Date());
+    const dim=this.daysInMonth(y,m);
+
+    // pin
+    const pinCells=[0,1,2,3].map(i=>({style:'width:14px;height:14px;border-radius:50%;transition:all .15s;'+(i<S.pin.length?'background:var(--color-accent)':'background:transparent;border:1.5px solid var(--color-neutral-700)')}));
+    const keyStyle='height:64px;border-radius:16px;background:var(--color-surface);border:0;color:var(--color-text);font-size:24px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-sm)';
+    const pinKeys=['1','2','3','4','5','6','7','8','9'].map(d=>({label:d,aria:d,onClick:()=>this.pinPress(d),style:keyStyle}));
+    pinKeys.push({label:'',aria:'',onClick:()=>{},style:'height:64px;background:none;border:0'});
+    pinKeys.push({label:'0',aria:'0',onClick:()=>this.pinPress('0'),style:keyStyle});
+    pinKeys.push({label:'⌫',aria:'Borrar',onClick:()=>this.pinBack(),style:'height:64px;border-radius:16px;background:none;border:0;color:var(--color-neutral-400);font-size:22px;cursor:pointer'});
+
+    // dashboard
+    const income=this.incomeForMonth(y,m);
+    const expTotal=this.monthExpenses(y,m).reduce((a,x)=>a+Number(x.amount||0),0);
+    const balance=income-expTotal;
+    const resCount=S.reservations.filter(r=>r.status!=='Cancelada'&&(this.isHours(r)?this.inMonth(r.start_date,y,m):this.nightsInMonth(r,y,m)>0)).length;
+    const totalMin=dim*1440;
+    const roomStats=this.rooms.filter(r=>r.active).map(rm=>{
+      const occ=this.occupiedMinutesRoomMonth(rm.id,y,m);
+      const pct=totalMin?Math.round(occ/totalMin*100):0;
+      const occH=Math.round(occ/60),availH=Math.round((totalMin-occ)/60);
+      return {name:rm.name,occLabel:pct+'%',occNights:occH,availNights:availH,
+        dotStyle:'width:11px;height:11px;border-radius:50%;background:'+rm.color+';display:inline-block',
+        barStyle:'width:'+Math.min(100,pct)+'%;background:'+rm.color,
+        incomeFmt:this.money(this.incomeForMonth(y,m,rm.id))};
+    });
+
+    // calendar
+    const weekdays=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const legend=this.rooms.filter(r=>r.active).map(rm=>({name:rm.name,dotStyle:'width:11px;height:11px;border-radius:50%;background:'+rm.color+';display:inline-block'}));
+    const first=new Date(y,m,1);const sw=(first.getDay()+6)%7;const nWeeks=Math.ceil((sw+dim)/7);
+    let cur=this.addDays(first,-sw);const weeks=[];
+    for(let w=0;w<nWeeks;w++){const row=[];for(let i=0;i<7;i++){
+      const iso=this.isoOf(cur);const inM=cur.getMonth()===m;const isToday=iso===todayIso;
+      const bars=this.rooms.filter(r=>r.active).map(rm=>{
+        let ivs=[];this.state.reservations.forEach(r=>{if(r.room_id===rm.id&&r.status!=='Cancelada')ivs=ivs.concat(this.intervalsForDate(r,iso));});
+        return {style:this.barStyle(this.mergeIntervals(ivs),rm.color)};
+      });
+      const dres=this.reservationsOn(iso);
+      const clickIso=iso;
+      row.push({label:String(cur.getDate()),bars,
+        cellStyle:'display:flex;flex-direction:column;align-items:center;gap:4px;border:0;cursor:pointer;border-radius:8px;padding:5px 2px;min-height:52px;'+(inM?'background:var(--color-surface);':'background:transparent;')+(isToday?'box-shadow:inset 0 0 0 1.5px var(--color-accent);':'box-shadow:inset 0 0 0 1px var(--color-neutral-900);'),
+        numStyle:'font-size:12px;'+(inM?(isToday?'color:var(--color-accent);font-weight:700':'color:var(--color-text)'):'color:var(--color-neutral-700)'),
+        onClick:dres.length?(()=>this.openDay(clickIso)):(()=>this.openNewReservation(clickIso))});
+      cur=this.addDays(cur,1);
+    }weeks.push(row);}
+
+    // reservations list
+    const q=S.search.trim().toLowerCase();const rf=S.resFilter;
+    const filtered=S.reservations.filter(r=>{
+      if(rf!=='all'&&r.room_id!==rf)return false;
+      if(q){const rm=this.roomOf(r.room_id);const hay=(r.guest_name+' '+(r.phone||'')+' '+(rm?rm.name+' '+rm.short:'')).toLowerCase();if(!hay.includes(q))return false;}
+      return true;
+    });
+    const nowMin=(()=>{const n=new Date();return n.getHours()*60+n.getMinutes();})();
+    const cls=r=>{
+      if(r.status==='Cancelada')return'fin';
+      if(this.isHours(r)){
+        if(r.start_date<todayIso)return'fin';
+        if(r.start_date>todayIso)return'prox';
+        const s=this.tmin(r.start_time),e=this.tmin(r.end_time);
+        if(nowMin>=e)return'fin';if(nowMin<s)return'prox';return'curso';
+      }
+      if(r.end_date<=todayIso)return'fin';
+      if(r.start_date>todayIso)return'prox';
+      return'curso';
+    };
+    const key=r=>this.isHours(r)?(r.start_date+' '+(r.start_time||'')):r.start_date;
+    const byKey=(a,b)=>key(a)<key(b)?-1:key(a)>key(b)?1:0;
+    const enCurso=filtered.filter(r=>cls(r)==='curso').sort(byKey).map(r=>this.resCard(r));
+    const proximas=filtered.filter(r=>cls(r)==='prox').sort(byKey).map(r=>this.resCard(r));
+    const finalizadas=filtered.filter(r=>cls(r)==='fin').sort((a,b)=>byKey(b,a)).map(r=>this.resCard(r));
+    const groups=[{title:'En curso',items:enCurso,show:enCurso.length>0},{title:'Próximas',items:proximas,show:proximas.length>0},{title:'Finalizadas',items:finalizadas,show:finalizadas.length>0}];
+    const chipStyle=active=>'padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;border:1px solid '+(active?'var(--color-accent)':'var(--color-neutral-800)')+';background:'+(active?'var(--color-accent-900)':'transparent')+';color:'+(active?'var(--color-accent)':'var(--color-neutral-400)');
+    const filters=[{label:'Todas',key:'all'}].concat(this.rooms.filter(r=>r.active).map(r=>({label:r.name,key:r.id}))).map(f=>({label:f.label,style:chipStyle(rf===f.key),onClick:()=>this.setState({resFilter:f.key})}));
+
+    // expenses
+    const mexp=this.monthExpenses(y,m).slice().sort((a,b)=>a.date<b.date?1:-1);
+    const expItems=mexp.map(x=>({desc:x.description,cat:x.category,date:this.fmtDMY(x.date),amountFmt:this.money(x.amount),onEdit:()=>this.openExpense(x),onDelete:()=>this.requestDeleteExp(x.id)}));
+
+    // sheets
+    const sh=S.sheet;
+    const f=S.form;
+    const roomOptions=this.rooms.filter(r=>r.active).map(rm=>{const active=f.room_id===rm.id;
+      return {name:rm.name,onSelect:()=>this.updateForm('room_id',rm.id),
+        dotStyle:'width:9px;height:9px;border-radius:50%;background:'+rm.color+';display:inline-block',
+        style:'display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:'+(active?rm.color+'22':'var(--color-surface)')+';border:1px solid '+(active?rm.color:'var(--color-divider)')+';color:var(--color-text)'};});
+    let durPreview='';
+    if(this.isHours(f)){const s=this.tmin(f.start_time),e=this.tmin(f.end_time);if(s!=null&&e!=null&&e>s)durPreview=this.fmtDur(e-s);}
+    else if(f.start_date&&f.end_date&&this.parseIso(f.end_date)>this.parseIso(f.start_date))durPreview=this.nights(f.start_date,f.end_date)+' noches';
+    const liveOverlap=(this.candidateValid(f)&&this.hasConflict(f,f.id))?'Esta habitación ya está reservada en alguno de los horarios seleccionados.':'';
+
+    let detail={};
+    if(sh&&sh.type==='detail'){const r=S.reservations.find(x=>x.id===sh.id);if(r){const c=this.resCard(r);const hrs=this.isHours(r);
+      detail={roomShort:c.roomShort,roomName:c.roomName,roomStyle:c.roomStyle,statusStyle:c.statusStyle,status:r.status,guest:r.guest_name,amountFmt:this.money(r.amount),
+        lbl1:hrs?'Fecha':'Ingreso',val1:this.fmtDMY(r.start_date),
+        lbl2:hrs?'Horario':'Salida',val2:hrs?(r.start_time+'–'+r.end_time):this.fmtDMY(r.end_date),
+        durLabel:hrs?'Duración':'Noches',durVal:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+        phone:r.phone||'—',payment:r.payment_method,notes:r.notes?r.notes:'—',onEdit:()=>this.openEdit(r),onDelete:()=>this.requestDeleteRes(r.id),onWa:()=>this.whatsapp(r)};}}
+
+    let daySheet={items:[]};
+    if(sh&&sh.type==='day'){const items=this.reservationsOn(sh.iso).map(r=>this.resCard(r));daySheet={title:this.fmtDMY(sh.iso),items,onNew:()=>this.openNewReservation(sh.iso)};}
+
+    const xf=S.expForm;
+    const toastView=S.toasts.map(t=>({msg:t.msg,isCheck:t.icon==='check',isTrash:t.icon==='trash',isX:t.icon==='x',iconStyle:'display:grid;place-items:center;color:'+(t.icon==='check'?'#54c07a':t.icon==='trash'?'#e8697d':'#e8697d')}));
+
+    const isWide=S.isWide;
+    const titles={dashboard:'Dashboard',calendar:'Calendario',reservations:'Reservas',expenses:'Gastos'};
+
+    return {
+      showLock:!S.unlocked,
+      showSkeleton:S.unlocked&&!S.ready,
+      showApp:S.unlocked&&S.ready,
+      isWide, isNarrow:!isWide,
+      pin:S.pin, pinError:S.pinError, pinCells, pinKeys, unlock:()=>this.tryUnlock(),
+      logout:()=>this.logout(),
+      tabDashboard:()=>this.setTab('dashboard'),tabCalendar:()=>this.setTab('calendar'),tabReservations:()=>this.setTab('reservations'),tabExpenses:()=>this.setTab('expenses'),
+      navColor:{
+        dashboard:S.tab==='dashboard'?'var(--color-accent)':'var(--color-neutral-500)',
+        calendar:S.tab==='calendar'?'var(--color-accent)':'var(--color-neutral-500)',
+        reservations:S.tab==='reservations'?'var(--color-accent)':'var(--color-neutral-500)',
+        expenses:S.tab==='expenses'?'var(--color-accent)':'var(--color-neutral-500)'
+      },
+      side:{dashboard:this.navStyle('dashboard'),calendar:this.navStyle('calendar'),reservations:this.navStyle('reservations'),expenses:this.navStyle('expenses')},
+      screenTitle:titles[S.tab],
+      isDashboard:S.tab==='dashboard',isCalendar:S.tab==='calendar',isReservations:S.tab==='reservations',isExpenses:S.tab==='expenses',
+      shellStyle:isWide?'padding-left:220px':'',
+      mainStyle:'max-width:560px;margin:0 auto;padding:20px 16px '+(isWide?'48px':'150px'),
+      monthLabel, prevMonth:()=>this.prevMonth(),nextMonth:()=>this.nextMonth(),goToday:()=>this.goToday(),
+      incomeFmt:this.money(income),expenseFmt:this.money(expTotal),balanceFmt:this.money(balance),
+      balanceStyle:'font-size:30px;font-weight:700;line-height:1.1;margin:2px 0;color:'+(balance>=0?'var(--color-text)':'#e8697d'),
+      resCount, roomStats,
+      quickNewRes:()=>this.openNewReservation(),quickNewExp:()=>this.openExpense(),
+      weekdays, legend, weeks,
+      search:S.search, onSearch:(e)=>this.setState({search:e.target.value}),
+      filters, groups, resEmpty:S.reservations.length===0, resNoResults:S.reservations.length>0&&filtered.length===0,
+      expTotalFmt:this.money(expTotal), expItems, expEmpty:mexp.length===0, addExpense:()=>this.openExpense(),
+      showFab:!sh&&(S.tab==='dashboard'||S.tab==='calendar'||S.tab==='reservations'),
+      fabClick:()=>this.openNewReservation(),
+      fabStyle:'position:fixed;right:16px;bottom:'+(isWide?'24px':'calc(74px + env(safe-area-inset-bottom))')+';display:flex;align-items:center;gap:8px;height:52px;padding:0 20px;border-radius:99px;background:var(--color-accent);color:#11131b;border:0;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:30',
+      stop:(e)=>e.stopPropagation(),
+      sheetRes:!!sh&&sh.type==='res', sheetDetail:!!sh&&sh.type==='detail', sheetDay:!!sh&&sh.type==='day', sheetExpense:!!sh&&sh.type==='exp',
+      resFormTitle:f.id?'Editar reserva':'Nueva reserva',
+      roomOptions, closeSheet:()=>this.closeSheet(), saveRes:()=>this.saveReservation(),
+      formMode:f.mode, isHoursMode:f.mode==='hours', isNightsMode:f.mode==='nights',
+      setModeHours:()=>this.setMode('hours'), setModeNights:()=>this.setMode('nights'),
+      modeHoursStyle:this.modeBtn(f.mode==='hours'), modeNightsStyle:this.modeBtn(f.mode==='nights'),
+      fStartTime:f.start_time,fEndTime:f.end_time,
+      onStartTime:(e)=>this.onStartTimeChange(e.target.value), onEndTime:(e)=>this.updateForm('end_time',e.target.value),
+      fGuest:f.guest_name,fPhone:f.phone,fStart:f.start_date,fEnd:f.end_date,fAmount:f.amount,fNotes:f.notes,fPayment:f.payment_method,fStatus:f.status,
+      onGuest:(e)=>this.updateForm('guest_name',e.target.value),onPhone:(e)=>this.updateForm('phone',e.target.value),
+      onStart:(e)=>this.updateForm('start_date',e.target.value),onEnd:(e)=>this.updateForm('end_date',e.target.value),
+      onAmount:(e)=>this.updateForm('amount',e.target.value),onNotes:(e)=>this.updateForm('notes',e.target.value),
+      onPayment:(e)=>this.updateForm('payment_method',e.target.value),onStatus:(e)=>this.updateForm('status',e.target.value),
+      paymentOptions:['Efectivo','Transferencia','Otro'],statusOptions:['Reservada','Pagada','Pendiente','Cancelada'],
+      nightsPreview:durPreview, overlapError:S.errors.overlap||liveOverlap,
+      errGuest:S.errors.guest||'',errDates:S.errors.dates||'',errAmount:S.errors.amount||'',
+      detail, daySheet,
+      expFormTitle:xf.id?'Editar gasto':'Nuevo gasto',
+      xDesc:xf.description,xDate:xf.date,xAmount:xf.amount,xCategory:xf.category,
+      onXDesc:(e)=>this.updateExp('description',e.target.value),onXDate:(e)=>this.updateExp('date',e.target.value),
+      onXAmount:(e)=>this.updateExp('amount',e.target.value),onXCategory:(e)=>this.updateExp('category',e.target.value),
+      categoryOptions:['Limpieza','Servicios','Mantenimiento','Impuestos','Insumos','Otros'],
+      errXDesc:S.expErrors.desc||'',errXAmount:S.expErrors.amount||'',
+      saveExp:()=>this.saveExpense(),
+      confirmActive:!!S.confirm, confirmTitle:S.confirm?S.confirm.title:'', confirmMsg:S.confirm?S.confirm.msg:'',
+      confirmOk:()=>this.confirmOk(), confirmCancel:()=>this.confirmCancel(),
+      toasts:toastView
+    };
+  }
+}
+</script>
+</body>
+</html>
