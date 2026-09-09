@@ -406,12 +406,12 @@ button{font-family:var(--font-body)}
             </div>
             <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px">
               <sc-for list="{{ rm.slots }}" as="h" hint-placeholder-count="48">
-                <div style="{{ h.style }}" title="{{ h.title }}">{{ h.label }}</div>
+                <div style="{{ h.style }}" title="{{ h.title }}" onClick="{{ h.onClick }}">{{ h.label }}</div>
               </sc-for>
             </div>
           </div>
         </sc-for>
-        <p class="text-muted" style="font-size:11px;margin:0">Cada bloque es media hora (00:00 a 23:30). En negro las ocupadas; en blanco las disponibles.</p>
+        <p class="text-muted" style="font-size:11px;margin:0">Cada bloque es media hora (00:00 a 23:30). En negro las ocupadas; en blanco las disponibles. Tocá una hora para reservar desde ese horario.</p>
       </div>
       <div class="hr" style="margin:4px 0"></div>
       <sc-for list="{{ daySheet.items }}" as="r" hint-placeholder-count="1">
@@ -716,7 +716,9 @@ class Component extends DCLogic {
   goToday(){const n=new Date();this.setState({cursor:{y:n.getFullYear(),m:n.getMonth()}});}
 
   /* sheets */
-  openNewReservation(dateIso){const f=this.blankForm();if(dateIso)f.start_date=dateIso;this.setState({form:f,errors:{},sheet:{type:'res'}});}
+  openNewReservation(dateIso,roomId,startTime){const f=this.blankForm();if(dateIso)f.start_date=dateIso;if(roomId)f.room_id=roomId;f.mode='hours';
+    if(startTime){const sm=this.tmin(startTime);if(sm!=null){f.start_time=startTime;const em=Math.min(sm+60,1439);f.end_time=this.pad(Math.floor(em/60))+':'+this.pad(em%60);}}
+    this.setState({form:f,errors:{},sheet:{type:'res'}});}
   setMode(mode){this.setState(s=>{const f={...s.form,mode};if(mode==='hours'){if(!f.start_time)f.start_time='14:00';if(!f.end_time)f.end_time='18:00';}else if(f.start_date&&!f.end_date){f.end_date=this.isoOf(this.addDays(this.parseIso(f.start_date),1));}return{form:f,errors:{}};});}
   onStartTimeChange(v){this.setState(s=>{const f={...s.form,start_time:v};const sm=this.tmin(v),em=this.tmin(f.end_time);if(sm!=null&&(em==null||em<=sm)){const ne=Math.min(sm+240,1439);f.end_time=this.pad(Math.floor(ne/60))+':'+this.pad(ne%60);}return{form:f,errors:{...s.errors,dates:undefined,overlap:undefined}};});}
   openEdit(r){this.setState({form:{...this.blankForm(),...r,amount:String(r.amount)},errors:{},sheet:{type:'res'}});}
@@ -1013,8 +1015,9 @@ class Component extends DCLogic {
           const lbl=this.pad(Math.floor(hs/60))+':'+(hs%60===0?'00':'30');
           slots.push({
             label:lbl,
-            title:lbl+' – '+(occ?'Reservado':'Libre'),
-            style:'height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;'+(occ?('background:#15161d;color:#ffffff;font-weight:500'):('background:#ffffff;color:#15161d;font-weight:700'))
+            title:lbl+' – '+(occ?'Reservado (tocá para reservar desde acá)':'Libre (tocá para reservar desde acá)'),
+            onClick:()=>this.openNewReservation(sh.iso,rm.id,lbl),
+            style:'height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;'+(occ?('background:#15161d;color:#ffffff;font-weight:500'):('background:#ffffff;color:#15161d;font-weight:700'))
           });
         }
         const occMin=merged.reduce((a,iv)=>a+(iv[1]-iv[0]),0);
