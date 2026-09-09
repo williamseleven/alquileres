@@ -317,8 +317,8 @@ button{font-family:var(--font-body)}
       <sc-if value="{{ isHoursMode }}">
         <div class="field"><label>Fecha *</label><input type="date" class="input" value="{{ fStart }}" onInput="{{ onStart }}" style="height:42px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="field"><label>Hora desde *</label><input type="time" class="input" value="{{ fStartTime }}" onInput="{{ onStartTime }}" style="height:42px"></div>
-          <div class="field"><label>Hora hasta *</label><input type="time" class="input" value="{{ fEndTime }}" onInput="{{ onEndTime }}" style="height:42px"></div>
+          <div class="field"><label>Hora desde *</label><input type="time" step="1800" class="input" value="{{ fStartTime }}" onInput="{{ onStartTime }}" style="height:42px"></div>
+          <div class="field"><label>Hora hasta *</label><input type="time" step="1800" class="input" value="{{ fEndTime }}" onInput="{{ onEndTime }}" style="height:42px"></div>
         </div>
       </sc-if>
       <sc-if value="{{ isNightsMode }}">
@@ -401,14 +401,14 @@ button{font-family:var(--font-body)}
               <span style="font-weight:600;font-size:13px;flex:1">{{ rm.name }}</span>
               <span class="text-muted" style="font-size:11px">{{ rm.summary }}</span>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px">
-              <sc-for list="{{ rm.hours }}" as="h" hint-placeholder-count="24">
-                <div style="{{ h.style }}" title="{{ h.title }}">{{ h.hour }}</div>
+            <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px">
+              <sc-for list="{{ rm.slots }}" as="h" hint-placeholder-count="48">
+                <div style="{{ h.style }}" title="{{ h.title }}">{{ h.label }}</div>
               </sc-for>
             </div>
           </div>
         </sc-for>
-        <p class="text-muted" style="font-size:11px;margin:0">Franja 00:00 a 23:00. En negro las horas ocupadas; en blanco las disponibles.</p>
+        <p class="text-muted" style="font-size:11px;margin:0">Cada bloque es media hora (00:00 a 23:30). En negro las ocupadas; en blanco las disponibles.</p>
       </div>
       <div class="hr" style="margin:4px 0"></div>
       <sc-for list="{{ daySheet.items }}" as="r" hint-placeholder-count="1">
@@ -919,14 +919,15 @@ class Component extends DCLogic {
         let ivs=[];
         this.state.reservations.forEach(r=>{if(r.room_id===rm.id&&r.status!=='Cancelada')ivs=ivs.concat(this.intervalsForDate(r,sh.iso));});
         const merged=this.mergeIntervals(ivs);
-        const hours=[];
-        for(let h=0;h<24;h++){
-          const hs=h*60,he=(h+1)*60;
+        const slots=[];
+        for(let i=0;i<48;i++){
+          const hs=i*30,he=hs+30;
           const occ=merged.some(iv=>iv[0]<he&&hs<iv[1]);
-          hours.push({
-            hour:this.pad(h),
-            title:this.pad(h)+':00 – '+(occ?'Reservado':'Libre'),
-            style:'height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;'+(occ?('background:#15161d;color:#ffffff;font-weight:500'):('background:#ffffff;color:#15161d;font-weight:700'))
+          const lbl=this.pad(Math.floor(hs/60))+':'+(hs%60===0?'00':'30');
+          slots.push({
+            label:lbl,
+            title:lbl+' – '+(occ?'Reservado':'Libre'),
+            style:'height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;'+(occ?('background:#15161d;color:#ffffff;font-weight:500'):('background:#ffffff;color:#15161d;font-weight:700'))
           });
         }
         const occMin=merged.reduce((a,iv)=>a+(iv[1]-iv[0]),0);
@@ -934,7 +935,7 @@ class Component extends DCLogic {
         return {name:rm.name,
           dotStyle:'width:10px;height:10px;border-radius:50%;background:'+rm.color+';display:inline-block',
           summary:occMin>0?((Number.isInteger(occH)?occH:occH.toFixed(1))+' h ocupadas'):'Libre todo el día',
-          hours};
+          slots};
       });
       daySheet={title:this.fmtDMY(sh.iso),items,rooms24,onNew:()=>this.openNewReservation(sh.iso)};
     }
