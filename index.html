@@ -611,6 +611,7 @@ class Component extends DCLogic {
   addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
   fmtDMY(s){if(!s)return'';const p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
   nights(a,b){if(!a||!b)return 0;return Math.round((this.parseIso(b)-this.parseIso(a))/86400000);}
+  jornadas(a,b){const n=this.nights(a,b);return n<=1?'Jornada completa':(n+' jornadas');}
   money(n){return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Number(n)||0);}
   daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
   inMonth(iso,y,m){const d=this.parseIso(iso);return d.getFullYear()===y&&d.getMonth()===m;}
@@ -832,7 +833,7 @@ class Component extends DCLogic {
       roomStyle:'display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 6px;border-radius:6px;font-size:10px;font-weight:600;background:'+rm.color+'26;color:'+rm.color+';border:1px solid '+rm.color+'66',
       statusStyle, status:r.status,
       dates:hrs?(this.fmtDMY(r.start_date)+' · '+r.start_time+'–'+r.end_time):(this.fmtDMY(r.start_date)+' → '+this.fmtDMY(r.end_date)),
-      nights:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+      nights:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):this.jornadas(r.start_date,r.end_date),
       amountFmt:this.money(r.amount),
       cardStyle:'width:100%;text-align:left;background:var(--color-surface);border:0;box-shadow:var(--shadow-sm);border-radius:8px;padding:12px 14px;cursor:pointer'+(r.status==='Cancelada'?';opacity:.55':''),
       onOpen:()=>this.openDetail(r.id)
@@ -858,7 +859,7 @@ class Component extends DCLogic {
         'Fecha fin':hrs?'':this.fmtDMY(r.end_date),
         'Hora desde':hrs?(r.start_time||''):'',
         'Hora hasta':hrs?(r.end_time||''):'',
-        'Duración':hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+        'Duración':hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):this.jornadas(r.start_date,r.end_date),
         'Monto (ARS)':Number(r.amount)||0,
         'Método de pago':r.payment_method||'',
         'Estado':r.status||'',
@@ -990,7 +991,7 @@ class Component extends DCLogic {
         style:'display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;background:'+(active?rm.color+'22':'var(--color-surface)')+';border:1px solid '+(active?rm.color:'var(--color-divider)')+';color:var(--color-text)'};});
     let durPreview='';
     if(this.isHours(f)){const s=this.tmin(f.start_time),e=this.tmin(f.end_time);if(s!=null&&e!=null&&e>s)durPreview=this.fmtDur(e-s);}
-    else if(f.start_date&&f.end_date&&this.parseIso(f.end_date)>this.parseIso(f.start_date))durPreview=this.nights(f.start_date,f.end_date)+' noches';
+    else if(f.start_date&&f.end_date&&this.parseIso(f.end_date)>this.parseIso(f.start_date))durPreview=this.jornadas(f.start_date,f.end_date);
     const liveOverlap=(this.candidateValid(f)&&this.hasConflict(f,f.id))?'Este gabinete ya está reservado en alguno de los horarios seleccionados.':'';
 
     let detail={};
@@ -998,7 +999,7 @@ class Component extends DCLogic {
       detail={roomShort:c.roomShort,roomName:c.roomName,roomStyle:c.roomStyle,statusStyle:c.statusStyle,status:r.status,guest:r.guest_name,amountFmt:this.money(r.amount),
         lbl1:hrs?'Fecha':'Ingreso',val1:this.fmtDMY(r.start_date),
         lbl2:hrs?'Horario':'Salida',val2:hrs?(r.start_time+'–'+r.end_time):this.fmtDMY(r.end_date),
-        durLabel:hrs?'Duración':'Noches',durVal:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):(this.nights(r.start_date,r.end_date)+' noches'),
+        durLabel:hrs?'Duración':'Tipo',durVal:hrs?this.fmtDur(this.tmin(r.end_time)-this.tmin(r.start_time)):this.jornadas(r.start_date,r.end_date),
         phone:r.phone||'—',payment:r.payment_method,notes:r.notes?r.notes:'—',onEdit:()=>this.openEdit(r),onDelete:()=>this.requestDeleteRes(r.id),onWa:()=>this.whatsapp(r)};}}
 
     let daySheet={items:[],rooms24:[]};
